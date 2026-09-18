@@ -1,0 +1,39 @@
+# Python caches and local environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+dist/
+build/
+*.egg-info/
+
+# Local runtime state and credentials
+.env
+.env.*
+*.pem
+*.key
+id_ed25519*
+known_hosts
+.dsv41-connection/
+state/
+logs/
+*.log
+*.raw
+
+# Model and benchmark artifacts (keep these out of GitHub)
+*.gguf
+*.bin
+*.safetensors
+*.tar
+*.tar.gz
+*.zip
+*.b64
+evidence/
+results/
+metrics-*.json
+repro-*/
+
+# Generated/one-off exports
+*.html
+*-transfer.*
+在魔搭终端执行-*.txt

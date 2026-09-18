@@ -1,0 +1,28 @@
+name: offline-tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ['3.10', '3.11', '3.12', '3.13']
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Run public artifact audit
+        run: python tools/public_audit.py .
+      - name: Run deployment tests
+        run: python -m unittest discover -s deployment -p 'test_*.py'
+      - name: Run benchmark tests
+        run: python -m unittest discover -s benchmarks -p 'test_*.py'
+      - name: Run DSH adapter tests
+        run: python -m unittest discover -s integrations/dsh -p 'test_*.py'
+      - name: Run benchmark-control tests
+        run: python -m unittest discover -s integrations/benchmark-control -p 'test_*.py'

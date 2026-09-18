@@ -1,0 +1,34 @@
+{
+  "id": "YOUR_RELEASE_ID",
+  "repo": "YOUR_NAMESPACE/YOUR_MODEL_REPOSITORY",
+  "revision": "YOUR_PINNED_REVISION",
+  "defaults": {
+    "gpu_cache_gib": 172,
+    "host_cache_gib": 96,
+    "io_threads": 4,
+    "threads": 20,
+    "batch": 128,
+    "context": 4096,
+    "port": 48241
+  },
+  "assets": [
+    {"path": "core/CORE.gguf", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "core"},
+    {"path": "expertpack/expertpack.v2.manifest", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "expert_manifest"},
+    {"path": "engram/v1/engram.v1.manifest.json", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "engram_manifest"},
+    {"path": "recovery/releases/RELEASE_ID/runtime-source.tar.gz", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "source"},
+    {"path": "recovery/releases/RELEASE_ID/runtime-source.sha256.json", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "source_hashes"},
+    {"path": "expertpack/pack-000.bin", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "expert"},
+    {"path": "engram/v1/layer-001/weights.bin", "size": 0, "sha256": "REPLACE_WITH_LOWERCASE_SHA256", "role": "engram"}
+  ],
+  "engram_rows": [
+    {
+      "layer": 1,
+      "row_start": 0,
+      "row_count": 1,
+      "weight_path": "engram/v1/layer-001/weights.bin",
+      "weight_row_bytes": 256,
+      "scale_path": "engram/v1/layer-001/scales.bin",
+      "scale_row_bytes": 8
+    }
+  ]
+}
