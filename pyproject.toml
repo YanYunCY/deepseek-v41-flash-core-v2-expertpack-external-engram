@@ -1,7 +1,7 @@
 [project]
-name = "dsv41-deployment-toolkit"
+name = "deepseek-v41-flash-external-engram"
 version = "0.1.0"
-description = "Deployment, benchmark, and local adapter tooling for a community DeepSeek-V4.1-Flash AMD/ROCm deployment"
+description = "Core v2, ExpertPack, external Engram deployment, benchmark, and local adapter tooling for DeepSeek-V4.1-Flash"
 requires-python = ">=3.10"
 dependencies = []
 

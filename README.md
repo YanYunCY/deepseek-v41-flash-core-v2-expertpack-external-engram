@@ -1,4 +1,4 @@
-# DSV41 Deployment Toolkit
+# DeepSeek-V4.1-Flash: Core v2 + ExpertPack + External Engram
 
 可复现的 DeepSeek-V4.1-Flash 社区部署、基准测试和本地 DSH 接入工具集，重点针对 AMD `gfx942` / ROCm 主机。
 
