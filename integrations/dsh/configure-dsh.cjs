@@ -21,6 +21,10 @@ async function main() {
     api: 'openai-completions',
     baseURL: 'http://127.0.0.1:48241/v1',
     apiKeyEnv: 'DSV41_LOCAL_API_KEY',
+    // Make the official V4.1 default explicit.  The session-title request is
+    // allowed to override this per request, but normal chat turns must carry
+    // thinking: { type: 'enabled' } to the local gateway.
+    thinking: 'enabled',
     reasoningEffort: 'high',
     // Keep the model's 262,144-token output capability, but bound the
     // thinking phase so an interactive request cannot consume the entire
