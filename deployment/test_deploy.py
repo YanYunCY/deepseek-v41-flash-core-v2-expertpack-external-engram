@@ -110,6 +110,7 @@ class ReceiptAndPlanningTests(unittest.TestCase):
         self.assertIn("--moe-stream-direct", command)
         self.assertIn("--no-warmup", command)
         self.assertEqual(command[command.index("-np") + 1], "3")
+        self.assertEqual(command[command.index("--reasoning") + 1], "auto")
         self.assertEqual(len([a for a in release["assets"] if a.role == "expert"]), 49)
         self.assertNotIn("parallel", release["defaults"])
 

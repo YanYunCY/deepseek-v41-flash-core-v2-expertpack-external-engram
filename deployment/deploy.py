@@ -596,7 +596,7 @@ def runtime_command(binary: Path, core: Path, gpu: int, host: int, io_threads: i
     return [str(binary), "-m", str(core), "--moe-stream-cache", str(gpu), "--moe-stream-l2", str(host),
             "--moe-stream-io-threads", str(io_threads), "--moe-stream-direct", "--no-warmup",
             "--fit", "off", "-ngl", "99", "-c", str(context), "-b", str(batch),
-            "-ub", str(batch), "-np", str(parallel), "-t", str(threads), "--reasoning", "off",
+            "-ub", str(batch), "-np", str(parallel), "-t", str(threads), "--reasoning", "auto",
             "-lv", "4", "--host", "127.0.0.1", "--port", str(port)]
 
 

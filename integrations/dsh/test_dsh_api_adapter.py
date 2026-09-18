@@ -107,6 +107,24 @@ class AdapterTests(unittest.TestCase):
         self.assertEqual(prepared.native_payload["reasoning_budget_tokens"], 3976)
         self.assertEqual(prepared.native_payload["n_predict"], 5000)
 
+    def test_dsh_effort_derives_a_bounded_reasoning_budget(self) -> None:
+        service, _, _ = self.make_service([])
+        prepared = service.prepare(request(
+            thinking_token_budget=None,
+            reasoning_effort="high",
+        ))
+        self.assertEqual(prepared.native_payload["reasoning_budget_tokens"], 16384)
+
+    def test_api_defaults_to_high_thinking_with_bounded_budget(self) -> None:
+        service, encoder, _ = self.make_service([])
+        value = request()
+        value.pop("thinking")
+        value.pop("reasoning_effort")
+        prepared = service.prepare(value)
+        self.assertEqual(prepared.thinking_mode, "thinking")
+        self.assertEqual(prepared.native_payload["reasoning_budget_tokens"], 16384)
+        self.assertEqual(encoder.calls[0][1]["reasoning_effort"], 75)
+
     def test_reasoning_budget_requires_enabled_thinking(self) -> None:
         service, _, _ = self.make_service([])
         with self.assertRaisesRegex(adapter.AdapterError, "requires thinking.type"):

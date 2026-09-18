@@ -43,6 +43,7 @@ CONTEXT_WINDOW = 1048576
 MAX_OUTPUT_TOKENS = 262144
 MAX_REASONING_BUDGET_TOKENS = MAX_OUTPUT_TOKENS
 MIN_ANSWER_TOKENS = 1024
+DEFAULT_REASONING_BUDGETS = {"low": 2048, "high": 16384, "max": 16384}
 EOS = "<｜end▁of▁sentence｜>"
 THINK_OPEN = "<think>"
 THINK_CLOSE = "</think>"
@@ -445,11 +446,13 @@ class AdapterService:
         response_format = value.get("response_format")
         if response_format is not None and not isinstance(response_format, Mapping):
             raise _request_error("response_format must be an object")
-        thinking = value.get("thinking", {"type": "disabled"})
+        # DeepSeek V4.1 Flash defaults to thinking enabled. DSH normally sends
+        # this object explicitly; keep direct OpenAI-compatible callers aligned.
+        thinking = value.get("thinking", {"type": "enabled"})
         if not isinstance(thinking, Mapping) or thinking.get("type") not in {"enabled", "disabled"}:
             raise _request_error("thinking.type must be 'enabled' or 'disabled'")
         thinking_mode = "thinking" if thinking["type"] == "enabled" else "chat"
-        reasoning_effort = value.get("reasoning_effort")
+        reasoning_effort = value.get("reasoning_effort", "high" if thinking_mode == "thinking" else None)
         effort_map = {"low": 50, "high": 75, "max": 100}
         if reasoning_effort is not None and reasoning_effort not in effort_map:
             raise _request_error("reasoning_effort must be 'low', 'high', or 'max'")
@@ -469,6 +472,14 @@ class AdapterService:
             # a caller supplies a smaller max_tokens than DSH normally does.
             thinking_budget = min(
                 thinking_budget,
+                max(1, max_tokens - MIN_ANSWER_TOKENS),
+            )
+        elif thinking_mode == "thinking":
+            # DSH exposes reasoning_effort but no separate budget field.
+            # Bound the native reasoning phase so an interactive turn still
+            # emits an answer.
+            thinking_budget = min(
+                DEFAULT_REASONING_BUDGETS[reasoning_effort or "high"],
                 max(1, max_tokens - MIN_ANSWER_TOKENS),
             )
         stop = value.get("stop")

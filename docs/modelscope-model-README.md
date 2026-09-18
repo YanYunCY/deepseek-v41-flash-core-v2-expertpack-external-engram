@@ -165,7 +165,8 @@ python3 /root/dsv41/deploy-parallel.py start --root /root/dsv41 \
 |176 GiB|96 GiB|13.885 tok/s|17.168 tok/s|185.100 GiB|增益有限，余量更小|
 |180 GiB|96 GiB|14.188 tok/s|17.874 tok/s|189.302 GiB|本轮约快 4.7%，不作通用默认|
 
-建议的短请求配置是 **172/96 GiB、batch/ubatch 128、context 4096、parallel 1、I/O 线程 4、CPU 线程 8、O_DIRECT、reasoning off**。这是该任务集的稳妥基线，不是全负载最优承诺。本轮 172/96 的热合并为 17.066 tok/s；历史证据中另有约 17.747 tok/s 的不同批次记录，两者不可混算。180/96 虽有约 4.7% 的本轮优势，readiness 后采样已到 189.302 GiB，不能被称作默认值。
+建议的短请求配置是 **172/96 GiB、batch/ubatch 128、context 4096、parallel 1、I/O 线程 4、CPU 线程 8、O_DIRECT、reasoning auto**。这是该任务集的稳妥基线，不是全负载最优承诺。本轮 172/96 的热合并为 17.066 tok/s；历史证据中另有约 17.747 tok/s 的不同批次记录，两者不可混算。180/96 虽有约 4.7% 的本轮优势，readiness 后采样已到 189.302 GiB，不能被称作默认值。
+`auto` 让请求中的官方式 thinking 开关生效；DSH 适配器会对 high/max 默认限制 16,384 个思考 token，并保留最终答案空间。
 
 交互并发推荐 **parallel 2、总 context 8192（每槽 4096）、GPU/Host 160/96 GiB、batch 512**；吞吐并发推荐 **parallel 4、总 context 16384（每槽 4096）、GPU/Host 160/96 GiB、batch 512**。固定 `max_tokens=128` 下，两轮有效输出/批次墙钟为：
 

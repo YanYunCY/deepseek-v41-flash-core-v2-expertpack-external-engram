@@ -69,7 +69,17 @@ tokens for `high`/`max`. Thinking and the final answer share the native output
 budget; the cap prevents a difficult prompt from spending the whole turn in
 reasoning before emitting an answer. The headless client prints reasoning to
 stderr and the adapter forwards it as `reasoning_content` SSE deltas for UIs
-that render reasoning blocks.
+that render reasoning blocks. If an OpenAI-compatible caller omits `thinking`,
+the adapter follows the V4.1 Flash API default (`enabled`, `high`) and
+derives the same bounded budget. Thinking and the final answer share the
+native output budget; the cap prevents a difficult prompt from spending the
+whole turn in reasoning before an answer is emitted.
+
+The first visible event is the assistant role marker. The model can still be
+silent while the native server performs prompt prefill; this is proportional
+to uncached input length. Official DeepSeek requests use `stream: true` and
+deliver reasoning in `choices[0].delta.reasoning_content`, but the cloud
+service has stronger prompt caching and scheduling than a single local slot.
 
 For the Windows installer, pass `-ExpectedRelayHost` explicitly. The public scripts intentionally fail when no relay host is supplied.
 
