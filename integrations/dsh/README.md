@@ -1,6 +1,13 @@
 # DSH integration
 
-The adapter is an optional compatibility layer. It listens on `127.0.0.1:48242`, loads the official V4.1 encoder from a path supplied at runtime, and translates DSH/OpenAI-compatible chat requests to the native local server at `127.0.0.1:48241`.
+This directory contains the public, redacted compatibility layer. It is
+separate from model deployment: the native server must be healthy on
+`127.0.0.1:48241` before the adapter or tunnel can be useful. A new remote
+instance does not automatically contain these files.
+
+The adapter listens only on `127.0.0.1:48242`, loads the official V4.1 encoder
+from a path supplied at runtime, and translates DSH/OpenAI-compatible chat
+requests to the native local server at `127.0.0.1:48241`.
 
 ```bash
 python3 integrations/dsh/dsh_api_adapter.py \
@@ -18,8 +25,50 @@ export DSV41_RELAY_HOST=relay.example.invalid
 python3 integrations/dsh/start-dsh.py
 ```
 
+For a fresh ModelScope instance using the published model-specific bundle,
+download the adapter, supervisor, encoder, and starter together. Downloading
+only `deployment/20260916/deploy.py` is insufficient and will produce
+`can't open file .../dsh-integration/start-dsh.py`:
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+from modelscope.hub.file_download import model_file_download
+
+repo = "Yanyunawa/DeepSeek-V4.1-Flash-MXFP4-GGUF"
+out = Path("/root/dsv41/dsh-integration")
+out.mkdir(parents=True, exist_ok=True)
+for name in ("start-dsh.py", "dsh_api_adapter.py", "remote-connect.py", "encoding.py"):
+    source = Path(model_file_download(
+        model_id=repo, file_path=f"deployment/dsh/{name}"))
+    (out / name).write_bytes(source.read_bytes())
+PY
+python3 /root/dsv41/dsh-integration/start-dsh.py
+```
+
+The model-specific starter expects the existing user-managed key and host-key
+files under `/mnt/workspace/.dsv41-connection/`. It does not generate or copy
+credentials. The starter is idempotent: a file lock prevents duplicate
+adapters and the tunnel supervisor reconnects with bounded backoff. State and
+logs should live on the instance's local disk when the persistent workspace
+quota is tight.
+
+After the starter reports `DSH_ADAPTER_READY`, verify from Windows:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:48241/v1/models
+```
+
+Then start a new DSH session. Existing DSH sessions cache their provider
+settings and should be closed before testing a newly connected route.
+
 For the Windows installer, pass `-ExpectedRelayHost` explicitly. The public scripts intentionally fail when no relay host is supplied.
 
 The relay host, user, ports, and key paths are deployment-specific. Set them explicitly; the public templates intentionally do not contain the original infrastructure address or public key.
 
-The adapter path is experimental until it has been tested end to end with the official encoder, real llama-server, thinking modes, tool calls, cancellation, and tunnel reconnects.
+The text path and a function-tool round trip have been tested end to end with
+the official encoder, real llama-server, tunnel, and Windows DSH client. The
+short verification requests did not emit visible reasoning text, so this is
+not a claim that every thinking-stream presentation is verified. Image input,
+cancellation under load, and cloud-only features remain unsupported by this
+local adapter.

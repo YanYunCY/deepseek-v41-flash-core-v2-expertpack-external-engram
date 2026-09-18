@@ -30,6 +30,55 @@ python3 deployment/deploy.py status --root /srv/dsv41
 python3 deployment/deploy.py stop --root /srv/dsv41
 ```
 
+### Connect a running instance to Windows DSH
+
+The model launcher and the DSH connection are separate lifecycles. Starting
+`deploy.py` only makes the local model API available on `127.0.0.1:48241`; it
+does not create the adapter or an SSH tunnel. A new ModelScope instance also
+does not inherit `/root/dsv41/integrations/dsh` from an earlier instance.
+
+For the public, redacted templates, copy `integrations/dsh/` to the inference
+host and provide the deployment-specific relay explicitly:
+
+```bash
+export DSV41_RELAY_HOST="relay.example.invalid"
+python3 integrations/dsh/start-dsh.py
+```
+
+The model-specific bundle, including the official V4.1 encoder, is published
+under `deployment/dsh/` in the linked ModelScope model. On a fresh ModelScope
+instance, download the four runtime files after the model service is ready:
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+from modelscope.hub.file_download import model_file_download
+
+repo = "Yanyunawa/DeepSeek-V4.1-Flash-MXFP4-GGUF"
+out = Path("/root/dsv41/dsh-integration")
+out.mkdir(parents=True, exist_ok=True)
+for name in ("start-dsh.py", "dsh_api_adapter.py", "remote-connect.py", "encoding.py"):
+    source = Path(model_file_download(
+        model_id=repo, file_path=f"deployment/dsh/{name}"))
+    (out / name).write_bytes(source.read_bytes())
+PY
+python3 /root/dsv41/dsh-integration/start-dsh.py
+```
+
+The instance must already contain the user-managed
+`/mnt/workspace/.dsv41-connection/dmit_ed25519` and `known_hosts` files; they
+are never stored in GitHub or ModelScope. On Windows, the DSH task forwards
+`127.0.0.1:48241` through the relay. Verify the complete path before opening a
+new DSH session:
+
+```powershell
+Invoke-RestMethod http://127.0.0.1:48241/v1/models
+```
+
+The verified path supports text, thinking configuration, and function-tool
+round trips. Image input, cancellation/release under load, and every official
+cloud feature remain outside this adapter's acceptance scope.
+
 Use `examples/release.json.example` only as a schema reference. A live release must use a versioned descriptor whose every asset has the exact ModelScope size and SHA-256 value.
 
 Run the offline tests with the Python standard library only:
@@ -90,4 +139,8 @@ Original scripts in this repository are released under the MIT license in `LICEN
 
 ## Status
 
-The code is useful as a reproducibility and deployment toolkit, but the DSH path remains experimental until it has been re-run end to end with the official encoder, native server, tunnel, and client. See `docs/limitations.md`.
+The deployment path and the DSH text/tool round trip have been re-run end to
+end with the official encoder, native server, tunnel, and Windows client. The
+adapter remains intentionally limited: image input, cancellation under load,
+and cloud-only features are not claimed. See `docs/limitations.md` and
+`integrations/dsh/README.md`.
