@@ -25,6 +25,17 @@ async function main() {
     // allowed to override this per request, but normal chat turns must carry
     // thinking: { type: 'enabled' } to the local gateway.
     thinking: 'enabled',
+    // DSH's retry event schema requires an integer delay.  The stock
+    // jittered backoff can produce fractional milliseconds, so keep jitter
+    // disabled for this local route while retaining normal retry handling.
+    retryPolicy: {
+      mode: 'normal',
+      backoff: {
+        initialDelayMs: 500,
+        maxDelayMs: 10000,
+        jitterRatio: 0,
+      },
+    },
     reasoningEffort: 'high',
     // Keep the model's 262,144-token output capability, but bound the
     // thinking phase so an interactive request cannot consume the entire

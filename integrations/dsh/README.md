@@ -76,6 +76,11 @@ derives the same bounded budget. Thinking and the final answer share the
 native output budget; the cap prevents a difficult prompt from spending the
 whole turn in reasoning before an answer is emitted.
 
+The local route also sets a deterministic retry backoff (`500` to `10000` ms,
+`jitterRatio: 0`). DSH persists retry delays as integer milliseconds; leaving
+the stock fractional jitter enabled can fail a request with
+`llm/retry delayMs must be a safe integer greater than or equal to 0`.
+
 The first visible event is the assistant role marker. The model can still be
 silent while the native server performs prompt prefill; this is proportional
 to uncached input length. Official DeepSeek requests use `stream: true` and
