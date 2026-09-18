@@ -127,7 +127,7 @@ Keep the public Git repository small and reviewable:
 2. ModelScope: model weights, ExpertPack/Engram sidecars, exact release manifests, and large evidence archives.
 3. Private storage: raw prompts, full server logs, credentials, SSH host details, and one-off terminal installers.
 
-The original deployment materials and benchmark articles are available from the ModelScope model/release pages referenced in `docs/reproducibility.md`.
+The original deployment materials and benchmark articles are available from the ModelScope model/release pages referenced in `docs/reproducibility.md`. The full model-page README is mirrored at [`docs/modelscope-model-README.md`](docs/modelscope-model-README.md) so the deployment description and the public source remain reviewable together.
 
 ## Security posture
 
@@ -144,3 +144,4 @@ end with the official encoder, native server, tunnel, and Windows client. The
 adapter remains intentionally limited: image input, cancellation under load,
 and cloud-only features are not claimed. See `docs/limitations.md` and
 `integrations/dsh/README.md`.
+
