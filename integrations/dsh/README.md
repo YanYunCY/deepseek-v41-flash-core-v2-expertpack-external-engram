@@ -62,6 +62,15 @@ Invoke-RestMethod http://127.0.0.1:48241/v1/models
 Then start a new DSH session. Existing DSH sessions cache their provider
 settings and should be closed before testing a newly connected route.
 
+The checked-in DSH configuration enables DeepSeek thinking explicitly. It
+keeps the model's 1,048,576-token context and 262,144-token output capability,
+while limiting the default thinking phase to 2,048 tokens for `low` and 16,384
+tokens for `high`/`max`. Thinking and the final answer share the native output
+budget; the cap prevents a difficult prompt from spending the whole turn in
+reasoning before emitting an answer. The headless client prints reasoning to
+stderr and the adapter forwards it as `reasoning_content` SSE deltas for UIs
+that render reasoning blocks.
+
 For the Windows installer, pass `-ExpectedRelayHost` explicitly. The public scripts intentionally fail when no relay host is supplied.
 
 The relay host, user, ports, and key paths are deployment-specific. Set them explicitly; the public templates intentionally do not contain the original infrastructure address or public key.

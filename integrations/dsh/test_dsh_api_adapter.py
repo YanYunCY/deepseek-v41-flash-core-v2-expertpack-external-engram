@@ -98,6 +98,23 @@ class AdapterTests(unittest.TestCase):
             self.assertEqual(raised.exception.code, "context_length_exceeded")
         self.assertEqual(upstream.payloads, [])
 
+    def test_reasoning_budget_is_forwarded_and_leaves_answer_room(self) -> None:
+        service, _, upstream = self.make_service([])
+        prepared = service.prepare(request(
+            thinking_token_budget=4096,
+            max_tokens=5000,
+        ))
+        self.assertEqual(prepared.native_payload["reasoning_budget_tokens"], 3976)
+        self.assertEqual(prepared.native_payload["n_predict"], 5000)
+
+    def test_reasoning_budget_requires_enabled_thinking(self) -> None:
+        service, _, _ = self.make_service([])
+        with self.assertRaisesRegex(adapter.AdapterError, "requires thinking.type"):
+            service.prepare(request(
+                thinking={"type": "disabled"},
+                thinking_token_budget=2048,
+            ))
+
     def test_fragmented_thinking_delimiters_and_tool_block_are_safe(self) -> None:
         tool_block = "\n\n<｜DSML｜ calls><｜DSML｜ invoke name=weather>{\"city\":\"Beijing\"}</｜DSML｜ calls>"
         stream = b"".join([

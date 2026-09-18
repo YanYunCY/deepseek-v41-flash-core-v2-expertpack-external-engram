@@ -41,6 +41,8 @@ DEFAULT_ENCODER = Path("/root/dsv41/capability/encoding.py")
 MAX_BODY_BYTES = 32 * 1024 * 1024
 CONTEXT_WINDOW = 1048576
 MAX_OUTPUT_TOKENS = 262144
+MAX_REASONING_BUDGET_TOKENS = MAX_OUTPUT_TOKENS
+MIN_ANSWER_TOKENS = 1024
 EOS = "<｜end▁of▁sentence｜>"
 THINK_OPEN = "<think>"
 THINK_CLOSE = "</think>"
@@ -454,6 +456,21 @@ class AdapterService:
         max_tokens = value.get("max_tokens", 262144)
         if not isinstance(max_tokens, int) or isinstance(max_tokens, bool) or max_tokens <= 0:
             raise _request_error("max_tokens must be a positive integer")
+        thinking_budget = value.get("thinking_token_budget")
+        if thinking_budget is not None:
+            if not isinstance(thinking_budget, int) or isinstance(thinking_budget, bool) or thinking_budget <= 0:
+                raise _request_error("thinking_token_budget must be a positive integer")
+            if thinking_mode != "thinking":
+                raise _request_error("thinking_token_budget requires thinking.type 'enabled'")
+            if thinking_budget > MAX_REASONING_BUDGET_TOKENS:
+                raise _request_error("thinking_token_budget exceeds the supported limit")
+            # The native runtime counts thinking and answer tokens in one
+            # n_predict budget. Keep enough room for a final answer even when
+            # a caller supplies a smaller max_tokens than DSH normally does.
+            thinking_budget = min(
+                thinking_budget,
+                max(1, max_tokens - MIN_ANSWER_TOKENS),
+            )
         stop = value.get("stop")
         if stop is not None and not (isinstance(stop, str) or (isinstance(stop, list) and all(isinstance(item, str) for item in stop))):
             raise _request_error("stop must be a string or an array of strings")
@@ -495,7 +512,7 @@ class AdapterService:
             "top_k": 0,
             "min_p": 0,
             "reasoning_control": False,
-            "reasoning_budget_tokens": -1,
+            "reasoning_budget_tokens": thinking_budget if thinking_budget is not None else -1,
             "cache_prompt": True,
         }
         if stop is not None:

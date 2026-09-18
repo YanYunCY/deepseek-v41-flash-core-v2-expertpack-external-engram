@@ -18,9 +18,17 @@ async function main() {
   const filename = path.join(dshHome, 'settings.yaml');
   const model = 'deepseek-v4.1-flash-local';
   const route = {
+    api: 'openai-completions',
     baseURL: 'http://127.0.0.1:48241/v1',
     apiKeyEnv: 'DSV41_LOCAL_API_KEY',
     reasoningEffort: 'high',
+    // Keep the model's 262,144-token output capability, but bound the
+    // thinking phase so an interactive request cannot consume the entire
+    // response before an answer is emitted.
+    thinkingBudgets: {
+      low: 2048,
+      high: 16384,
+    },
     maxTokens: 262144,
     defaultContextWindow: 1048576,
     streamIdleTimeoutMs: 300000,
@@ -30,7 +38,21 @@ async function main() {
       description: 'Self-hosted Core v2 + ExpertPack + Engram; text and tool calling.',
       contextWindow: 1048576,
       maxTokens: 262144,
-      inputModalities: ['text'],
+      input: ['text'],
+      reasoningEfforts: {
+        off: null,
+        low: 'low',
+        high: 'high',
+        max: 'max',
+      },
+      compat: {
+        // The adapter accepts DeepSeek's top-level thinking object and
+        // reasoning_effort fields. This makes DSH send an explicit enable
+        // switch instead of only displaying a local effort preference.
+        thinkingFormat: 'deepseek',
+        supportsReasoningEffort: true,
+        supportsThinkingTokenBudget: true,
+      },
     }],
   };
   resolveAdapterOptions(route);
