@@ -144,4 +144,3 @@ end with the official encoder, native server, tunnel, and Windows client. The
 adapter remains intentionally limited: image input, cancellation under load,
 and cloud-only features are not claimed. See `docs/limitations.md` and
 `integrations/dsh/README.md`.
-
